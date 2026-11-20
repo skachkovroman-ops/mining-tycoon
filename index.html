@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>MINING TYCOON - Mobile</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Press Start 2P', monospace;
+  image-rendering: pixelated;
+  -webkit-tap-highlight-color: transparent;
+}
+body {
+  background: #0a0a1a;
+  color: #fff;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  user-select: none;
+}
+#top {
+  background: #4a90e2;
+  border-bottom: 4px solid #000;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  flex-shrink: 0;
+  gap: 8px;
+}
+#top h1 {
+  font-size: 10px;
+  color: #ffeb3b;
+  text-shadow: 2px 2px #000;
+}
+.topRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+#money {
+  font-size: 11px;
+  text-shadow: 2px 2px #000;
+  white-space: nowrap;
+}
+#resetBtn {
+  background: #d9534f;
+  color: #fff;
+  border: 2px solid #000;
+  font-size: 7px;
+  padding: 6px 7px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+#game {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+#mineArea {
+  height: 45%;
+  min-height: 180px;
+  background: #1a1a2e;
+  position: relative;
+  border-bottom: 4px solid #000;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+#floor {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 28%;
+  background: repeating-linear-gradient(90deg, #3a2a1a 0 16px, #2a1a0a 16px 32px);
+  border-top: 4px solid #000;
+}
+.minerSprite {
+  position: absolute;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  animation: mining .35s infinite steps(2);
+}
+@keyframes mining {
+  0% { transform: rotate(-12deg); }
+  50% { transform: rotate(14deg); }
+  100% { transform: rotate(-12deg); }
+}
+#depth {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 6px 8px;
+  border: 2px solid #000;
+  font-size: 8px;
+  color: #6ff;
+  z-index: 10;
+}
+#shop {
+  flex: 1;
+  background: #5a3a2a;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: hidden;
+}
+#tabs {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.tab {
+  flex: 1;
+  background: #333;
+  border: 3px solid #000;
+  color: #aaa;
+  font-size: 9px;
+  padding: 10px 4px;
+  text-align: center;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.tab.active {
+  background: #fff;
+  color: #000;
+}
+#itemsScroll {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-right: 2px;
+}
+.shopItem {
+  background: #2a1a0a;
+  border: 3px solid #000;
+  padding: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.itemInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.itemInfo b {
+  font-size: 8px;
+  line-height: 1.3;
+}
+.itemInfo small {
+  font-size: 7px;
+  color: #ccc;
+}
+.buyBtn {
+  background: #3fbf3f;
+  border: 3px solid #000;
+  color: #000;
+  font-size: 8px;
+  padding: 10px 8px;
+  min-width: 78px;
+  text-align: center;
+  cursor: pointer;
+  touch-action: manipulation;
+  flex-shrink: 0;
+}
+.buyBtn:disabled {
+  background: #555;
+  color: #222;
+  cursor: default;
+}
+.buyBtn.activeBuy {
+  background: #ffeb3b;
+}
+.buyBtn.equipped {
+  background: #4a90e2;
+  color: #fff;
+}
+#bottomBar {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+#hireBtn {
+  flex: 1;
+  font-size: 9px;
+  padding: 12px 8px;
+}
+#snd {
+  width: 48px;
+  background: #333;
+  color: #fff;
+  border: 3px solid #000;
+  font-size: 12px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+@media (min-width: 650px) {
+  #game { flex-direction: row; }
+  #mineArea { height: auto; flex: 1; border-bottom: none; border-right: 4px solid #000; }
+  #shop { width: 280px; flex: none; }
+}
+</style>
+</head>
+<body>
+
+<div id="top">
+  <h1>MINING TYCOON ⛏️</h1>
+  <div class="topRight">
+    <div id="money">2500 $</div>
+    <button id="resetBtn" title="Сбросить прогресс">СБРОС</button>
+  </div>
+</div>
+
+<div id="game">
+  <div id="mineArea">
+    <div id="depth">👷 1 • 2.5 $/с</div>
+    <div id="floor"></div>
+    <div id="minersContainer"></div>
+  </div>
+
+  <div id="shop">
+    <div id="tabs">
+      <div id="tabPick" class="tab active">⛏️ КИРКИ</div>
+      <div id="tabSkin" class="tab">👷 СКИНЫ</div>
+    </div>
+
+    <div id="itemsScroll">
+      <div id="pickList" style="display:flex;flex-direction:column;gap:6px;"></div>
+      <div id="skinList" style="display:none;flex-direction:column;gap:6px;"></div>
+    </div>
+
+    <div id="bottomBar">
+      <button id="hireBtn" class="buyBtn">➕ НАНЯТЬ (1000$)</button>
+      <button id="snd">🔊</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'mining_tycoon_save_v1';
+
+const DEFAULT_STATE = {
+  money: 2500,
+  lvl: 1,
+  skinId: 0,
+  ownedSkins: [0],
+  miners: [{ l: 1, skin: 0 }],
+  sound: 1
+};
+
+let state = loadGame();
+let money = state.money;
+let lvl = state.lvl;
+let skinId = state.skinId;
+let ownedSkins = state.ownedSkins;
+let miners = state.miners;
+let sound = state.sound;
+
+let ctx;
+let tick = 0;
+
+const picks = [
+  { s: 5,  m: 1,   p: 0,    n: "МЕДНАЯ",    c: "#cd7f32" },
+  { s: 10, m: 1.5, p: 1000, n: "ЖЕЛЕЗНАЯ",  c: "#cccccc" },
+  { s: 20, m: 2,   p: 2000, n: "ЗОЛОТАЯ",   c: "#ffd700" },
+  { s: 30, m: 3,   p: 3000, n: "АЛМАЗНАЯ",  c: "#00d4ff" },
+  { s: 50, m: 5,   p: 4000, n: "МРАМОРНАЯ", c: "#ff66ff" }
+];
+
+const skins = [
+  { name: "РАБОЧИЙ", icon: "👷", mult: 1,   price: 0 },
+  { name: "РОБОТ",   icon: "🤖", mult: 1.8, price: 900 },
+  { name: "МЕХАНИК", icon: "👨‍🔧", mult: 2.2, price: 3000 },
+  { name: "КОСМО",   icon: "👨‍🚀", mult: 3,   price: 8000 },
+  { name: "МАГ",     icon: "🧙", mult: 5,   price: 20000 }
+];
+
+const moneyEl = document.getElementById('money');
+const minersCont = document.getElementById('minersContainer');
+const pickList = document.getElementById('pickList');
+const skinList = document.getElementById('skinList');
+const sndBtn = document.getElementById('snd');
+
+function saveGame() {
+  try {
+    const payload = {
+      money: Math.floor(money),
+      lvl,
+      skinId,
+      ownedSkins,
+      miners,
+      sound
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+  } catch (e) {
+    // Игнорируем ошибки квоты или приватного режима браузера
+  }
+}
+
+function loadGame() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return structuredCloneFallback(DEFAULT_STATE);
+    const parsed = JSON.parse(raw);
+
+    const validLvl = Number.isInteger(parsed.lvl) && parsed.lvl >= 1 && parsed.lvl <= 5 ? parsed.lvl : 1;
+    const validSkinId = Number.isInteger(parsed.skinId) && parsed.skinId >= 0 && parsed.skinId < 5 ? parsed.skinId : 0;
+    const validOwned = Array.isArray(parsed.ownedSkins) && parsed.ownedSkins.length
+      ? parsed.ownedSkins.filter(x => Number.isInteger(x) && x >= 0 && x < 5)
+      : [0];
+    if (!validOwned.includes(0)) validOwned.unshift(0);
+    if (!validOwned.includes(validSkinId)) validOwned.push(validSkinId);
+
+    const validMiners = Array.isArray(parsed.miners) && parsed.miners.length
+      ? parsed.miners.map(m => ({
+          l: Number.isInteger(m.l) && m.l >= 1 && m.l <= 5 ? m.l : validLvl,
+          skin: Number.isInteger(m.skin) && m.skin >= 0 && m.skin < 5 ? m.skin : validSkinId
+        }))
+      : [{ l: validLvl, skin: validSkinId }];
+
+    const validMoney = typeof parsed.money === 'number' && Number.isFinite(parsed.money) && parsed.money >= 0
+      ? parsed.money
+      : DEFAULT_STATE.money;
+
+    return {
+      money: validMoney,
+      lvl: validLvl,
+      skinId: validSkinId,
+      ownedSkins: validOwned,
+      miners: validMiners,
+      sound: parsed.sound ? 1 : 0
+    };
+  } catch (e) {
+    return structuredCloneFallback(DEFAULT_STATE);
+  }
+}
+
+function structuredCloneFallback(obj) {
+  return JSON.parse(JSON.stringify(obj));
+}
+
+function audioInit() {
+  if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+  if (ctx.state === 'suspended') ctx.resume();
+}
+
+function playHit(l) {
+  if (!sound) return;
+  audioInit();
+  let t = ctx.currentTime;
+  let o = ctx.createOscillator();
+  let g = ctx.createGain();
+  o.frequency.setValueAtTime(140 + l * 30, t);
+  o.frequency.exponentialRampToValueAtTime(40, t + 0.08);
+  g.gain.setValueAtTime(0.3, t);
+  g.gain.exponentialRampToValueAtTime(0.01, t + 0.12);
+  o.connect(g);
+  g.connect(ctx.destination);
+  o.start(t);
+  o.stop(t + 0.12);
+}
+
+function spawnVisual() {
+  minersCont.innerHTML = '';
+  miners.forEach((m, idx) => {
+    let sk = skins[m.skin] || skins[0];
+    let pick = picks[m.l - 1] || picks[0];
+    let div = document.createElement('div');
+    div.className = 'minerSprite';
+    div.style.left = (6 + (idx * 17) % 80) + '%';
+    div.style.bottom = (14 + (idx % 3) * 16) + '%';
+    let extra = sk.icon === "🤖" ? "⚡" : "";
+    div.innerHTML = `${sk.icon}<div style="position:absolute;left:22px;top:4px;font-size:16px;color:${pick.c}">⛏️</div><div style="position:absolute;top:-8px;font-size:9px">${extra}</div>`;
+    minersCont.appendChild(div);
+  });
+}
+
+function render() {
+  pickList.innerHTML = '';
+  skinList.innerHTML = '';
+
+  picks.forEach((p, i) => {
+    let id = i + 1;
+    let d = document.createElement('div');
+    d.className = 'shopItem';
+
+    let btnText = 'ЗАКРЫТО';
+    let btnClass = 'buyBtn';
+    if (id < lvl) { btnText = 'КУПЛЕНО'; }
+    else if (id === lvl) { btnText = 'В РУКАХ'; btnClass += ' equipped'; }
+    else if (id === lvl + 1) { btnText = p.p + '$'; if (money >= p.p) btnClass += ' activeBuy'; }
+
+    d.innerHTML = `
+      <div class="itemInfo">
+        <b style="color:${p.c}">${p.n}</b>
+        <small>⚡${p.s} • Множ: ${p.m}x</small>
+      </div>
+      <button class="${btnClass}">${btnText}</button>
+    `;
+
+    let btn = d.querySelector('button');
+    btn.disabled = !(id === lvl + 1 && money >= p.p);
+    btn.onclick = () => {
+      if (id === lvl + 1 && money >= p.p) {
+        money -= p.p;
+        lvl = id;
+        miners.forEach(m => m.l = lvl);
+        spawnVisual();
+        playHit(lvl);
+        update(true);
+      }
+    };
+    pickList.appendChild(d);
+  });
+
+  skins.forEach((s, i) => {
+    let d = document.createElement('div');
+    d.className = 'shopItem';
+    let isOwned = ownedSkins.includes(i);
+    let isEquipped = (i === skinId);
+    if (isEquipped) d.style.borderColor = '#ffeb3b';
+
+    let btnText = isEquipped ? 'НАДЕТО' : (isOwned ? 'НАДЕТЬ' : s.price + '$');
+    let btnClass = 'buyBtn';
+    if (isEquipped) btnClass += ' equipped';
+    else if (!isOwned && money >= s.price) btnClass += ' activeBuy';
+
+    d.innerHTML = `
+      <div class="itemInfo">
+        <b>${s.icon} ${s.name}</b>
+        <small>Доход: ${s.mult}x</small>
+      </div>
+      <button class="${btnClass}">${btnText}</button>
+    `;
+
+    let btn = d.querySelector('button');
+    btn.disabled = isEquipped || (!isOwned && money < s.price);
+    btn.onclick = () => {
+      if (isEquipped) return;
+      if (!isOwned && money >= s.price) {
+        money -= s.price;
+        ownedSkins.push(i);
+      }
+      if (ownedSkins.includes(i)) {
+        skinId = i;
+        miners.forEach(m => m.skin = skinId);
+        spawnVisual();
+        playHit(5);
+        update(true);
+      }
+    };
+    skinList.appendChild(d);
+  });
+
+  let hireBtn = document.getElementById('hireBtn');
+  hireBtn.disabled = money < 1000;
+  if (money >= 1000) hireBtn.classList.add('activeBuy');
+  else hireBtn.classList.remove('activeBuy');
+}
+
+function addMiner() {
+  miners.push({ l: lvl, skin: skinId });
+  spawnVisual();
+}
+
+function getIncomePerSec() {
+  let total = 0;
+  miners.forEach(m => {
+    let p = picks[m.l - 1] || picks[0];
+    let s = skins[m.skin] || skins[0];
+    total += p.s * p.m * s.mult * 0.5;
+  });
+  return total;
+}
+
+function update(shouldSave = false) {
+  moneyEl.textContent = Math.floor(money) + ' $';
+  let income = getIncomePerSec();
+  document.getElementById('depth').textContent = `👷 ${miners.length} • ${income.toFixed(1)} $/с`;
+  render();
+  if (shouldSave) saveGame();
+}
+
+document.getElementById('tabPick').onclick = () => {
+  document.getElementById('tabPick').classList.add('active');
+  document.getElementById('tabSkin').classList.remove('active');
+  pickList.style.display = 'flex';
+  skinList.style.display = 'none';
+};
+
+document.getElementById('tabSkin').onclick = () => {
+  document.getElementById('tabSkin').classList.add('active');
+  document.getElementById('tabPick').classList.remove('active');
+  pickList.style.display = 'none';
+  skinList.style.display = 'flex';
+};
+
+document.getElementById('hireBtn').onclick = () => {
+  if (money >= 1000) {
+    money -= 1000;
+    addMiner();
+    audioInit();
+    playHit(lvl);
+    update(true);
+  }
+};
+
+sndBtn.onclick = e => {
+  sound = !sound;
+  e.target.textContent = sound ? '🔊' : '🔇';
+  audioInit();
+  saveGame();
+};
+
+document.getElementById('resetBtn').onclick = () => {
+  if (confirm('Сбросить весь прогресс игры?')) {
+    const fresh = structuredCloneFallback(DEFAULT_STATE);
+    money = fresh.money;
+    lvl = fresh.lvl;
+    skinId = fresh.skinId;
+    ownedSkins = fresh.ownedSkins;
+    miners = fresh.miners;
+    sound = fresh.sound;
+    sndBtn.textContent = sound ? '🔊' : '🔇';
+    spawnVisual();
+    update(true);
+  }
+};
+
+window.addEventListener('pagehide', saveGame);
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) saveGame();
+});
+
+sndBtn.textContent = sound ? '🔊' : '🔇';
+spawnVisual();
+update(true);
+
+setInterval(() => {
+  tick++;
+  money += getIncomePerSec() / 10;
+  if (tick % 20 === 0 && miners.length) playHit(lvl);
+  if (tick % 10 === 0) {
+    update(true); // Автосохранение раз в секунду
+  } else {
+    moneyEl.textContent = Math.floor(money) + ' $';
+  }
+}, 100);
+</script>
+</body>
+  </html>
