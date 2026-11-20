@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>MINING TYCOON - Mobile</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Press Start 2P', monospace;
+  image-rendering: pixelated;
+  -webkit-tap-highlight-color: transparent;
+}
+body {
+  background: #0a0a1a;
+  color: #fff;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  user-select: none;
+}
+#top {
+  background: #4a90e2;
+  border-bottom: 4px solid #000;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  flex-shrink: 0;
+  gap: 8px;
+}
+#top h1 {
+  font-size: 10px;
+  color: #ffeb3b;
+  text-shadow: 2px 2px #000;
+}
+.topRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+#money {
+  font-size: 11px;
+  text-shadow: 2px 2px #000;
+  white-space: nowrap;
+}
+#resetBtn {
+  background: #d9534f;
+  color: #fff;
+  border: 2px solid #000;
+  font-size: 7px;
+  padding: 6px 7px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+#game {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+#mineArea {
+  height: 46%;
+  min-height: 185px;
+  background: #1a1a2e;
+  position: relative;
+  border-bottom: 4px solid #000;
+  overflow: hidden;
+  flex-shrink: 0;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+#floor {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 28%;
+  background: repeating-linear-gradient(90deg, #3a2a1a 0 16px, #2a1a0a 16px 32px);
+  border-top: 4px solid #000;
+}
+.minerSprite {
+  position: absolute;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  animation: mining .35s infinite steps(2);
+  pointer-events: none;
+}
+@keyframes mining {
+  0% { transform: rotate(-12deg); }
+  50% { transform: rotate(14deg); }
+  100% { transform: rotate(-12deg); }
+}
+.skeletonSprite {
+  position: absolute;
+  width: 54px;
+  height: 62px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 8;
+  cursor: pointer;
+  animation: skelBob 0.55s infinite alternate;
+}
+@keyframes skelBob {
+  from { transform: translateY(0px) scale(1); }
+  to { transform: translateY(-4px) scale(1.04); }
+}
+.skelIcon {
+  font-size: 32px;
+  filter: drop-shadow(0 0 6px rgba(255, 60, 60, 0.8));
+}
+.skelHpBar {
+  width: 44px;
+  height: 6px;
+  background: #222;
+  border: 2px solid #000;
+  margin-top: 2px;
+  overflow: hidden;
+}
+.skelHpFill {
+  height: 100%;
+  background: #ff3b3b;
+  width: 100%;
+  transition: width 0.08s linear;
+}
+.skelTimer {
+  font-size: 6px;
+  color: #ffb3b3;
+  text-shadow: 1px 1px #000;
+  margin-top: 2px;
+}
+.popText {
+  position: absolute;
+  font-size: 8px;
+  color: #ffeb3b;
+  text-shadow: 2px 2px #000;
+  pointer-events: none;
+  z-index: 15;
+  animation: popUp 0.75s ease-out forwards;
+  white-space: nowrap;
+}
+.popDanger {
+  color: #ff5252;
+}
+.popBonus {
+  color: #7effa1;
+  font-size: 9px;
+}
+@keyframes popUp {
+  0% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-30px); }
+}
+#hudTopLeft {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 10;
+  pointer-events: none;
+}
+.hudBadge {
+  background: rgba(0, 0, 0, 0.68);
+  padding: 5px 7px;
+  border: 2px solid #000;
+  font-size: 7px;
+  color: #6ff;
+}
+.hudDanger {
+  color: #ff7b7b;
+}
+.hudStreak {
+  color: #ffd700;
+}
+#shop {
+  flex: 1;
+  background: #5a3a2a;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: hidden;
+}
+#tabs {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.tab {
+  flex: 1;
+  background: #333;
+  border: 3px solid #000;
+  color: #aaa;
+  font-size: 9px;
+  padding: 10px 4px;
+  text-align: center;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.tab.active {
+  background: #fff;
+  color: #000;
+}
+#itemsScroll {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-right: 2px;
+}
+.shopItem {
+  background: #2a1a0a;
+  border: 3px solid #000;
+  padding: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.itemInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.itemInfo b {
+  font-size: 8px;
+  line-height: 1.3;
+}
+.itemInfo small {
+  font-size: 7px;
+  color: #ccc;
+}
+.buyBtn {
+  background: #3fbf3f;
+  border: 3px solid #000;
+  color: #000;
+  font-size: 8px;
+  padding: 10px 8px;
+  min-width: 78px;
+  text-align: center;
+  cursor: pointer;
+  touch-action: manipulation;
+  flex-shrink: 0;
+}
+.buyBtn:disabled {
+  background: #555;
+  color: #222;
+  cursor: default;
+}
+.buyBtn.activeBuy {
+  background: #ffeb3b;
+}
+.buyBtn.equipped {
+  background: #4a90e2;
+  color: #fff;
+}
+#bottomBar {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+#hireBtn {
+  flex: 1;
+  font-size: 9px;
+  padding: 12px 8px;
+}
+#snd {
+  width: 48px;
+  background: #333;
+  color: #fff;
+  border: 3px solid #000;
+  font-size: 12px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+@media (min-width: 650px) {
+  #game { flex-direction: row; }
+  #mineArea { height: auto; flex: 1; border-bottom: none; border-right: 4px solid #000; }
+  #shop { width: 280px; flex: none; }
+}
+</style>
+</head>
+<body>
+
+<div id="top">
+  <h1>MINING TYCOON ⛏️</h1>
+  <div class="topRight">
+    <div id="money">2500 $</div>
+    <button id="resetBtn" title="Сбросить прогресс">СБРОС</button>
+  </div>
+</div>
+
+<div id="game">
+  <div id="mineArea">
+    <div id="hudTopLeft">
+      <div id="depth" class="hudBadge">👷 1 • 2.5 $/с</div>
+      <div id="skelStatus" class="hudBadge">💀 ВОЛНА ЧЕРЕЗ 2:00</div>
+      <div id="streakStatus" class="hudBadge hudStreak">🔥 СЕРИЯ: 0/3</div>
+    </div>
+    <div id="floor"></div>
+    <div id="minersContainer"></div>
+    <div id="skeletonsContainer"></div>
+  </div>
+
+  <div id="shop">
+    <div id="tabs">
+      <div id="tabPick" class="tab active">⛏️ КИРКИ</div>
+      <div id="tabSkin" class="tab">👷 СКИНЫ</div>
+    </div>
+
+    <div id="itemsScroll">
+      <div id="pickList" style="display:flex;flex-direction:column;gap:6px;"></div>
+      <div id="skinList" style="display:none;flex-direction:column;gap:6px;"></div>
+    </div>
+
+    <div id="bottomBar">
+      <button id="hireBtn" class="buyBtn">➕ НАНЯТЬ (1000$)</button>
+      <button id="snd">🔊</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'mining_tycoon_save_v3';
+const SKELETON_SPAWN_SEC = 120; // Каждые 2 минуты
+const SKELETON_EAT_SEC = 60;    // Каждую минуту скелет забирает 1 рабочего
+const OFFLINE_CAP_SEC = 7200;   // Максимум 2 часа оффлайн-дохода за сессию
+const STREAK_BONUS_EVERY = 3;   // Бонус за каждых 3 скелетов без потери рабочего
+
+const DEFAULT_STATE = {
+  money: 2500,
+  lvl: 1,
+  skinId: 0,
+  ownedSkins: [0],
+  miners: [{ l: 1, skin: 0 }],
+  sound: 1,
+  streak: 0,
+  lastSavedAt: Date.now()
+};
+
+const picks = [
+  { s: 5,  m: 1,   p: 0,     n: "МЕДНАЯ",    c: "#cd7f32", tap: 4 },
+  { s: 10, m: 1.5, p: 1000,  n: "ЖЕЛЕЗНАЯ",  c: "#cccccc", tap: 12 },
+  { s: 20, m: 2,   p: 2500,  n: "ЗОЛОТАЯ",   c: "#ffd700", tap: 30 },
+  { s: 30, m: 3,   p: 5500,  n: "АЛМАЗНАЯ",  c: "#00d4ff", tap: 70 },
+  { s: 50, m: 5,   p: 12000, n: "МРАМОРНАЯ", c: "#ff66ff", tap: 160 },
+  { s: 80, m: 7.5, p: 30000, n: "ТИТАНОВАЯ", c: "#7effa1", tap: 380 }
+];
+
+const skins = [
+  { name: "РАБОЧИЙ", icon: "👷", mult: 1,   price: 0 },
+  { name: "РОБОТ",   icon: "🤖", mult: 1.8, price: 900 },
+  { name: "МЕХАНИК", icon: "👨‍🔧", mult: 2.2, price: 3200 },
+  { name: "КОСМО",   icon: "👨‍🚀", mult: 3,   price: 8500 },
+  { name: "МАГ",     icon: "🧙", mult: 5,   price: 22000 }
+];
+
+let state = loadGame();
+let money = state.money;
+let lvl = state.lvl;
+let skinId = state.skinId;
+let ownedSkins = state.ownedSkins;
+let miners = state.miners;
+let sound = state.sound;
+let streak = state.streak;
+
+let skeletons = [];
+let nextSkelId = 1;
+let spawnTimerSec = SKELETON_SPAWN_SEC;
+
+let ctx;
+let tick = 0;
+
+const mineArea = document.getElementById('mineArea');
+const moneyEl = document.getElementById('money');
+const minersCont = document.getElementById('minersContainer');
+const skeletonsCont = document.getElementById('skeletonsContainer');
+const pickList = document.getElementById('pickList');
+const skinList = document.getElementById('skinList');
+const sndBtn = document.getElementById('snd');
+const skelStatusEl = document.getElementById('skelStatus');
+const streakStatusEl = document.getElementById('streakStatus');
+
+function getHireCost(count = miners.length) {
+  return Math.round(1000 * Math.pow(1.22, Math.max(0, count - 1)));
+}
+
+function getTapDamage() {
+  const p = picks[lvl - 1] || picks[0];
+  const s = skins[skinId] || skins[0];
+  return Math.max(4, Math.round(p.tap * Math.sqrt(s.mult)));
+}
+
+function getTapIncome() {
+  const p = picks[lvl - 1] || picks[0];
+  const s = skins[skinId] || skins[0];
+  return Math.max(2, Math.round(p.tap * 0.45 * s.mult));
+}
+
+function getStreakBonusAmount() {
+  const totalPower = Math.max(10, getIncomePerSec());
+  return Math.round(450 + lvl * 550 + totalPower * 8);
+}
+
+function saveGame() {
+  try {
+    const payload = {
+      money: Math.floor(money),
+      lvl,
+      skinId,
+      ownedSkins,
+      miners,
+      sound,
+      streak,
+      lastSavedAt: Date.now()
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+  } catch (e) {}
+}
+
+function loadGame() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return structuredCloneFallback(DEFAULT_STATE);
+    const parsed = JSON.parse(raw);
+
+    const validLvl = Number.isInteger(parsed.lvl) && parsed.lvl >= 1 && parsed.lvl <= picks.length ? parsed.lvl : 1;
+    const validSkinId = Number.isInteger(parsed.skinId) && parsed.skinId >= 0 && parsed.skinId < skins.length ? parsed.skinId : 0;
+    const validOwned = Array.isArray(parsed.ownedSkins) && parsed.ownedSkins.length
+      ? parsed.ownedSkins.filter(x => Number.isInteger(x) && x >= 0 && x < skins.length)
+      : [0];
+    if (!validOwned.includes(0)) validOwned.unshift(0);
+    if (!validOwned.includes(validSkinId)) validOwned.push(validSkinId);
+
+    const validMiners = Array.isArray(parsed.miners) && parsed.miners.length
+      ? parsed.miners.map(m => ({
+          l: Number.isInteger(m.l) && m.l >= 1 && m.l <= picks.length ? m.l : validLvl,
+          skin: Number.isInteger(m.skin) && m.skin >= 0 && m.skin < skins.length ? m.skin : validSkinId
+        }))
+      : [{ l: validLvl, skin: validSkinId }];
+
+    const validMoney = typeof parsed.money === 'number' && Number.isFinite(parsed.money) && parsed.money >= 0
+      ? parsed.money
+      : DEFAULT_STATE.money;
+
+    const validStreak = typeof parsed.streak === 'number' && Number.isFinite(parsed.streak) && parsed.streak >= 0
+      ? Math.floor(parsed.streak)
+      : 0;
+
+    return {
+      money: validMoney,
+      lvl: validLvl,
+      skinId: validSkinId,
+      ownedSkins: validOwned,
+      miners: validMiners,
+      sound: parsed.sound ? 1 : 0,
+      streak: validStreak,
+      lastSavedAt: typeof parsed.lastSavedAt === 'number' ? parsed.lastSavedAt : Date.now()
+    };
+  } catch (e) {
+    return structuredCloneFallback(DEFAULT_STATE);
+  }
+}
+
+function structuredCloneFallback(obj) {
+  return JSON.parse(JSON.stringify(obj));
+}
+
+function audioInit() {
+  if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+  if (ctx.state === 'suspended') ctx.resume();
+}
+
+function playHit(l, mode = 'hit') {
+  if (!sound) return;
+  audioInit();
+  let t = ctx.currentTime;
+  let o = ctx.createOscillator();
+  let g = ctx.createGain();
+
+  if (mode === 'danger') {
+    o.type = 'sawtooth';
+    o.frequency.setValueAtTime(95, t);
+    o.frequency.exponentialRampToValueAtTime(35, t + 0.11);
+  } else if (mode === 'bonus') {
+    o.type = 'square';
+    o.frequency.setValueAtTime(440, t);
+    o.frequency.setValueAtTime(587.33, t + 0.06);
+    o.frequency.setValueAtTime(783.99, t + 0.12);
+  } else {
+    o.type = 'triangle';
+    o.frequency.setValueAtTime(140 + l * 25, t);
+    o.frequency.exponentialRampToValueAtTime(45, t + 0.09);
+  }
+
+  g.gain.setValueAtTime(0.25, t);
+  g.gain.exponentialRampToValueAtTime(0.01, t + 0.18);
+  o.connect(g);
+  g.connect(ctx.destination);
+  o.start(t);
+  o.stop(t + 0.18);
+}
+
+function spawnPopText(x, y, text, style = 'normal') {
+  const el = document.createElement('div');
+  el.className = 'popText' + (style === 'danger' ? ' popDanger' : style === 'bonus' ? ' popBonus' : '');
+  el.textContent = text;
+  el.style.left = x + 'px';
+  el.style.top = y + 'px';
+  mineArea.appendChild(el);
+  setTimeout(() => el.remove(), 750);
+}
+
+function spawnVisual() {
+  minersCont.innerHTML = '';
+  miners.forEach((m, idx) => {
+    let sk = skins[m.skin] || skins[0];
+    let pick = picks[m.l - 1] || picks[0];
+    let div = document.createElement('div');
+    div.className = 'minerSprite';
+    div.style.left = (6 + (idx * 17) % 80) + '%';
+    div.style.bottom = (14 + (idx % 3) * 16) + '%';
+    let extra = sk.icon === "🤖" ? "⚡" : "";
+    div.innerHTML = `${sk.icon}<div style="position:absolute;left:22px;top:4px;font-size:16px;color:${pick.c}">⛏️</div><div style="position:absolute;top:-8px;font-size:9px">${extra}</div>`;
+    minersCont.appendChild(div);
+  });
+}
+
+function renderSkeletons() {
+  skeletonsCont.innerHTML = '';
+  skeletons.forEach(sk => {
+    const div = document.createElement('div');
+    div.className = 'skeletonSprite';
+    div.style.left = sk.left + '%';
+    div.style.bottom = sk.bottom + '%';
+    const pct = Math.max(0, Math.min(100, (sk.hp / sk.maxHp) * 100));
+    div.innerHTML = `
+      <div class="skelIcon">💀</div>
+      <div class="skelHpBar"><div class="skelHpFill" style="width:${pct}%"></div></div>
+      <div class="skelTimer">АТАКА: ${Math.max(0, Math.ceil(sk.eatTimer))}с</div>
+    `;
+    div.addEventListener('pointerdown', e => {
+      e.stopPropagation();
+      damageSkeleton(sk.id, e);
+    });
+    skeletonsCont.appendChild(div);
+  });
+}
+
+function spawnSkeleton() {
+  const totalPower = Math.max(10, getIncomePerSec());
+  const maxHp = Math.round(25 + lvl * 35 + totalPower * 0.45);
+  const reward = Math.round(120 + lvl * 180 + totalPower * 2.5);
+  const left = 12 + ((nextSkelId * 23) % 72);
+  const bottom = 16 + ((nextSkelId % 3) * 15);
+
+  skeletons.push({
+    id: nextSkelId++,
+    hp: maxHp,
+    maxHp,
+    reward,
+    eatTimer: SKELETON_EAT_SEC,
+    left,
+    bottom
+  });
+
+  playHit(1, 'danger');
+  spawnPopText(40, 60, '💀 СКЕЛЕТ В ШАХТЕ!', 'danger');
+  renderSkeletons();
+  updateSkeletonHud();
+}
+
+function damageSkeleton(id, event) {
+  const idx = skeletons.findIndex(s => s.id === id);
+  if (idx === -1) return;
+  const sk = skeletons[idx];
+  const dmg = getTapDamage();
+  sk.hp -= dmg;
+
+  const rect = mineArea.getBoundingClientRect();
+  const px = event ? (event.clientX - rect.left) : 80;
+  const py = event ? (event.clientY - rect.top) : 80;
+
+  if (sk.hp <= 0) {
+    money += sk.reward;
+    skeletons.splice(idx, 1);
+    streak += 1;
+
+    if (streak % STREAK_BONUS_EVERY === 0) {
+      const bonus = getStreakBonusAmount();
+      money += bonus;
+      playHit(lvl, 'bonus');
+      spawnPopText(Math.max(16, px - 20), Math.max(24, py - 14), `🏆 СЕРИЯ x${streak}: +${bonus}$!`, 'bonus');
+    } else {
+      playHit(lvl + 2, 'hit');
+      spawnPopText(px, py, `+${sk.reward}$ 💀`, 'normal');
+    }
+
+    renderSkeletons();
+    update(true);
+  } else {
+    playHit(lvl + 2, 'hit');
+    spawnPopText(px, py, `-${dmg} HP`, 'danger');
+    renderSkeletons();
+  }
+}
+
+function updateSkeletonHud() {
+  if (skeletons.length > 0) {
+    const soonest = Math.min(...skeletons.map(s => s.eatTimer));
+    skelStatusEl.className = 'hudBadge hudDanger';
+    skelStatusEl.textContent = `💀 ${skeletons.length} • УКУС ЧЕРЕЗ ${Math.max(0, Math.ceil(soonest))}С`;
+  } else {
+    const mins = Math.floor(spawnTimerSec / 60);
+    const secs = Math.floor(spawnTimerSec % 60).toString().padStart(2, '0');
+    skelStatusEl.className = 'hudBadge';
+    skelStatusEl.textContent = `💀 ВОЛНА ЧЕРЕЗ ${mins}:${secs}`;
+  }
+
+  const progressInCycle = streak % STREAK_BONUS_EVERY;
+  streakStatusEl.textContent = `🔥 СЕРИЯ: ${progressInCycle}/${STREAK_BONUS_EVERY} (ВСЕГО: ${streak})`;
+}
+
+function render() {
+  pickList.innerHTML = '';
+  skinList.innerHTML = '';
+
+  picks.forEach((p, i) => {
+    let id = i + 1;
+    let d = document.createElement('div');
+    d.className = 'shopItem';
+
+    let btnText = 'ЗАКРЫТО';
+    let btnClass = 'buyBtn';
+    if (id < lvl) { btnText = 'КУПЛЕНО'; }
+    else if (id === lvl) { btnText = 'В РУКАХ'; btnClass += ' equipped'; }
+    else if (id === lvl + 1) { btnText = p.p + '$'; if (money >= p.p) btnClass += ' activeBuy'; }
+
+    d.innerHTML = `
+      <div class="itemInfo">
+        <b style="color:${p.c}">${p.n}</b>
+        <small>⚡${p.s} • Множ: ${p.m}x</small>
+      </div>
+      <button class="${btnClass}">${btnText}</button>
+    `;
+
+    let btn = d.querySelector('button');
+    btn.disabled = !(id === lvl + 1 && money >= p.p);
+    btn.onclick = () => {
+      if (id === lvl + 1 && money >= p.p) {
+        money -= p.p;
+        lvl = id;
+        miners.forEach(m => m.l = lvl);
+        spawnVisual();
+        playHit(lvl, 'hit');
+        update(true);
+      }
+    };
+    pickList.appendChild(d);
+  });
+
+  skins.forEach((s, i) => {
+    let d = document.createElement('div');
+    d.className = 'shopItem';
+    let isOwned = ownedSkins.includes(i);
+    let isEquipped = (i === skinId);
+    if (isEquipped) d.style.borderColor = '#ffeb3b';
+
+    let btnText = isEquipped ? 'НАДЕТО' : (isOwned ? 'НАДЕТЬ' : s.price + '$');
+    let btnClass = 'buyBtn';
+    if (isEquipped) btnClass += ' equipped';
+    else if (!isOwned && money >= s.price) btnClass += ' activeBuy';
+
+    d.innerHTML = `
+      <div class="itemInfo">
+        <b>${s.icon} ${s.name}</b>
+        <small>Доход: ${s.mult}x</small>
+      </div>
+      <button class="${btnClass}">${btnText}</button>
+    `;
+
+    let btn = d.querySelector('button');
+    btn.disabled = isEquipped || (!isOwned && money < s.price);
+    btn.onclick = () => {
+      if (isEquipped) return;
+      if (!isOwned && money >= s.price) {
+        money -= s.price;
+        ownedSkins.push(i);
+      }
+      if (ownedSkins.includes(i)) {
+        skinId = i;
+        miners.forEach(m => m.skin = skinId);
+        spawnVisual();
+        playHit(5, 'hit');
+        update
